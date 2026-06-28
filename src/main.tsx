@@ -69,6 +69,8 @@ type BarberiaData = {
   direccion: string | null;
   telefono: string | null;
   email: string | null;
+  logoUrl: string | null;
+  imagenPortadaUrl: string | null;
 };
 
 type ServicioData = {
@@ -147,6 +149,8 @@ function normalizeBarberia(value: unknown): BarberiaData {
     direccion: textValue(item.direccion ?? item.Direccion),
     telefono: textValue(item.telefono ?? item.Telefono),
     email: textValue(item.email ?? item.Email),
+    logoUrl: textValue(item.logoUrl ?? item.LogoUrl),
+    imagenPortadaUrl: textValue(item.imagenPortadaUrl ?? item.ImagenPortadaUrl),
   };
 }
 
@@ -874,6 +878,8 @@ function Dashboard({ session, logout }: { session: AuthSession; logout: () => vo
     direccion: "",
     telefono: "",
     email: "",
+    logoUrl: "",
+    imagenPortadaUrl: "",
   });
   const [servicioForm, setServicioForm] = React.useState(emptyServicio);
   const [barberoForm, setBarberoForm] = React.useState(emptyBarbero);
@@ -903,6 +909,8 @@ function Dashboard({ session, logout }: { session: AuthSession; logout: () => vo
         direccion: barberia.direccion ?? "",
         telefono: barberia.telefono ?? "",
         email: barberia.email ?? "",
+        logoUrl: barberia.logoUrl ?? "",
+        imagenPortadaUrl: barberia.imagenPortadaUrl ?? "",
       });
     } catch (err) {
       setPanelError(err instanceof Error ? err.message : "No se pudieron cargar los datos del panel.");
@@ -1143,6 +1151,23 @@ function Dashboard({ session, logout }: { session: AuthSession; logout: () => vo
             <Building2 size={21} />
             <h3>Mi barberia</h3>
           </div>
+          <div
+            className="barberia-preview"
+            style={
+              barberiaForm.imagenPortadaUrl
+                ? { backgroundImage: `linear-gradient(90deg, rgba(7, 7, 7, 0.9), rgba(7, 7, 7, 0.35)), url(${barberiaForm.imagenPortadaUrl})` }
+                : undefined
+            }
+          >
+            <div className="barberia-logo-preview">
+              {barberiaForm.logoUrl ? <img src={barberiaForm.logoUrl} alt="" /> : <Building2 size={28} />}
+            </div>
+            <div>
+              <span>Vista en BARO</span>
+              <strong>{barberiaForm.nombre || "Nombre de la barberia"}</strong>
+              <p>{barberiaForm.direccion || "Direccion pendiente"}</p>
+            </div>
+          </div>
           <div className="field-grid">
             <label>
               Nombre
@@ -1171,6 +1196,24 @@ function Dashboard({ session, logout }: { session: AuthSession; logout: () => vo
                 type="email"
                 value={barberiaForm.email}
                 onChange={(event) => setBarberiaForm((current) => ({ ...current, email: event.target.value }))}
+              />
+            </label>
+            <label>
+              URL del logo
+              <input
+                value={barberiaForm.logoUrl}
+                onChange={(event) => setBarberiaForm((current) => ({ ...current, logoUrl: event.target.value }))}
+                placeholder="https://..."
+              />
+            </label>
+            <label>
+              URL de imagen de portada
+              <input
+                value={barberiaForm.imagenPortadaUrl}
+                onChange={(event) =>
+                  setBarberiaForm((current) => ({ ...current, imagenPortadaUrl: event.target.value }))
+                }
+                placeholder="https://..."
               />
             </label>
           </div>

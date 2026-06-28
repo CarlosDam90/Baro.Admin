@@ -544,6 +544,61 @@ input:focus {
   font-size: 22px;
 }
 
+.barberia-preview {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  min-height: 180px;
+  padding: 24px;
+  border: 1px solid rgba(212, 175, 55, 0.32);
+  border-radius: 8px;
+  background:
+    linear-gradient(90deg, rgba(7, 7, 7, 0.92), rgba(7, 7, 7, 0.52)),
+    #202022;
+  background-position: center;
+  background-size: cover;
+}
+
+.barberia-logo-preview {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 84px;
+  height: 84px;
+  overflow: hidden;
+  border: 1px solid rgba(212, 175, 55, 0.45);
+  border-radius: 50%;
+  background: #111111;
+  color: #d4af37;
+}
+
+.barberia-logo-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.barberia-preview span {
+  color: #d4af37;
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.barberia-preview strong {
+  display: block;
+  margin-top: 4px;
+  color: #ffffff;
+  font-size: 30px;
+  line-height: 1.05;
+  overflow-wrap: anywhere;
+}
+
+.barberia-preview p {
+  margin: 8px 0 0;
+  color: #cfcfd1;
+}
+
 .panel-section > .submit-button {
   width: min(260px, 100%);
 }
@@ -706,6 +761,11 @@ input:focus {
   .inline-create,
   .admin-list > div {
     grid-template-columns: 1fr;
+  }
+
+  .barberia-preview {
+    align-items: flex-start;
+    flex-direction: column;
   }
 
   .admin-list span,
