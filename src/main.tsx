@@ -21,6 +21,7 @@ import "./styles.css";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "https://baro-api.onrender.com";
 const AUTH_STORAGE_KEY = "baro_admin_auth";
+const SESSION_EXPIRED_EVENT = "baro:session-expired";
 
 type AppView = "register" | "registerSuccess" | "login" | "dashboard";
 
@@ -259,11 +260,44 @@ function getStoredSession() {
   }
 
   try {
-    return JSON.parse(stored) as AuthSession;
+    const session = JSON.parse(stored) as AuthSession;
+
+    if (!session.token || !session.usuario || isJwtExpired(session.token)) {
+      window.localStorage.removeItem(AUTH_STORAGE_KEY);
+      return null;
+    }
+
+    return session;
   } catch {
     window.localStorage.removeItem(AUTH_STORAGE_KEY);
     return null;
   }
+}
+
+function isJwtExpired(token: string) {
+  try {
+    const payloadPart = token.split(".")[1];
+    const base64 = payloadPart.replace(/-/g, "+").replace(/_/g, "/");
+    const normalized = base64.padEnd(Math.ceil(base64.length / 4) * 4, "=");
+    const payload = JSON.parse(window.atob(normalized)) as { exp?: number };
+
+    return typeof payload.exp !== "number" || payload.exp * 1000 <= Date.now();
+  } catch {
+    return true;
+  }
+}
+
+function getApiErrorMessage(data: unknown, fallback: string) {
+  if (typeof data === "string" && data.trim()) {
+    return data;
+  }
+
+  if (data && typeof data === "object") {
+    const item = data as ApiObject;
+    return textValue(item.message ?? item.mensaje ?? item.detail ?? item.title) || fallback;
+  }
+
+  return fallback;
 }
 
 async function apiRequest<T>(token: string, path: string, options: RequestInit = {}) {
@@ -286,7 +320,13 @@ async function apiRequest<T>(token: string, path: string, options: RequestInit =
   }
 
   if (!response.ok) {
-    throw new Error(typeof data === "string" ? data : "La API devolvio un error.");
+    if (response.status === 401) {
+      window.localStorage.removeItem(AUTH_STORAGE_KEY);
+      window.dispatchEvent(new Event(SESSION_EXPIRED_EVENT));
+      throw new Error("Tu sesion ha caducado. Inicia sesion de nuevo.");
+    }
+
+    throw new Error(getApiErrorMessage(data, "La API devolvio un error."));
   }
 
   return data as T;
@@ -305,6 +345,17 @@ function App() {
   const currentStep = steps[stepIndex];
   const progress = Math.round(((stepIndex + 1) / steps.length) * 100);
   const isRegisterFlow = view === "register" || view === "registerSuccess";
+
+  React.useEffect(() => {
+    const handleSessionExpired = () => {
+      setSession(null);
+      setView("login");
+      setError("Tu sesion ha caducado. Inicia sesion de nuevo.");
+    };
+
+    window.addEventListener(SESSION_EXPIRED_EVENT, handleSessionExpired);
+    return () => window.removeEventListener(SESSION_EXPIRED_EVENT, handleSessionExpired);
+  }, []);
 
   function clearFeedback() {
     setMessage("");
@@ -465,7 +516,7 @@ function App() {
       }
 
       if (!response.ok || typeof data === "string") {
-        setError(typeof data === "string" ? data : "No se pudo iniciar sesion.");
+        setError(getApiErrorMessage(data, "No se pudo iniciar sesion."));
         return;
       }
 
